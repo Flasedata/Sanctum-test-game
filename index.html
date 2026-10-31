@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sanctum of the Firsts — Isometric Voxel Defense</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game-container">
+    <!-- Red Damage Flash Vignette -->
+    <div id="damage-vignette"></div>
+
+    <!-- 2D Floating World-to-Screen Text Layer -->
+    <div id="floating-text-container"></div>
+
+    <!-- ========================================================
+         TITLE SCREEN (Start Menu & Stage Select Carousel)
+         ======================================================== -->
+    <div id="title-screen">
+      <div class="title-backdrop-overlay"></div>
+
+      <div class="title-main-layout">
+        <!-- LEFT PANEL: Game Title, Main Actions, Status -->
+        <aside class="title-left-panel pixel-panel">
+          <div class="title-header">
+            <div class="title-icon-badge">🏛️</div>
+            <h1 class="title-logo">SANCTUM OF THE FIRSTS</h1>
+            <p class="title-sub">AN ISOMETRIC VOXEL DEFENSE ODYSSEY</p>
+          </div>
+
+          <!-- Active Stage Mini Status Card -->
+          <div class="title-stage-status-card">
+            <div class="status-card-header">
+              <span class="status-kicker">CAMPAIGN REALM:</span>
+              <span id="title-selected-stage-tag" class="status-tag unlocked">STAGE I · ACTIVE</span>
+            </div>
+            <div id="title-selected-stage-name" class="status-stage-name">Sunscorched Oasis</div>
+            <div class="status-stage-meta">
+              <span>🌊 10 Waves</span>
+              <span>·</span>
+              <span>💎 150 Shards</span>
+              <span>·</span>
+              <span>🗺️ Modular</span>
+            </div>
+          </div>
+
+          <div class="title-menu">
+            <button id="btn-play" class="pixel-btn title-btn pulse-gold">
+              ▶ PLAY
+            </button>
+            <button id="btn-title-guide" class="pixel-btn title-btn">
+              📜 HOW TO PLAY
+            </button>
+            <button id="btn-title-settings" class="pixel-btn title-btn">
+              ⚙️ SETTINGS
+            </button>
+          </div>
+
+          <div class="title-footer">
+            <span>PROCEDURAL VOXEL ENGINE · 5-TIER EVOLUTIONS · MODULAR REALMS</span>
+          </div>
+        </aside>
+
+        <!-- RIGHT PANEL: 3D Interactive Stage Select Carousel -->
+        <section class="title-right-panel pixel-panel">
+          <div class="stage-select-header">
+            <span class="stage-select-icon">🌐</span>
+            <div class="stage-select-titles">
+              <h2 class="stage-select-title">STAGE SELECT</h2>
+              <span class="stage-select-subtitle">CHOOSE YOUR DEFENSE SECTOR</span>
+            </div>
+          </div>
+
+          <!-- 3D Carousel Viewport & Nav Arrows -->
+          <div class="stage-carousel-viewport">
+            <button id="btn-stage-prev" class="stage-nav-arrow stage-nav-prev" title="Previous Stage (Left Arrow)">◀</button>
+
+            <div class="stage-canvas-wrapper">
+              <canvas id="stage-carousel-canvas" width="600" height="340"></canvas>
+            </div>
+
+            <button id="btn-stage-next" class="stage-nav-arrow stage-nav-next" title="Next Stage (Right Arrow)">▶</button>
+          </div>
+
+          <!-- Selected Stage Detail & Pagination Card -->
+          <div class="stage-info-card">
+            <div class="stage-card-top">
+              <h3 id="stage-display-title" class="stage-display-title">STAGE I: SUNSCORCHED OASIS</h3>
+              <span id="stage-display-badge" class="stage-display-badge badge-unlocked">UNLOCKED · ACTIVE REALM</span>
+            </div>
+            <p id="stage-display-desc" class="stage-display-desc">
+              Sun-drenched sandstone mesa protected by the First Monolith. Sunken turquoise oasis springs with winding cobblestone paths.
+            </p>
+            <div class="stage-pagination-row">
+              <div class="stage-dots" id="stage-pagination-dots">
+                <span class="stage-dot active" data-index="0" title="Stage 1: Sunscorched Oasis"></span>
+                <span class="stage-dot" data-index="1" title="Stage 2: Frostfang Reaches"></span>
+                <span class="stage-dot" data-index="2" title="Stage 3: Volcanic Caldera"></span>
+                <span class="stage-dot" data-index="3" title="Stage 4: Canopy Grove"></span>
+                <span class="stage-dot" data-index="4" title="Stage 5: Astral Spires"></span>
+              </div>
+              <span id="stage-counter-text" class="stage-counter-text">STAGE 1 / 5</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         TOP COMMAND BAR (Pixel-Voxel HUD)
+         ======================================================== -->
+    <header id="top-bar" class="pixel-panel">
+      <!-- Sanctum Vitality -->
+      <div class="hud-group sanctum-vitality">
+        <div class="stat-icon-wrapper" title="Sanctum Vitality">
+          <span class="hud-icon emerald-pulse">🏛️</span>
+        </div>
+        <div class="vitality-info">
+          <div class="vitality-label-row">
+            <span class="label">SANCTUM HP</span>
+            <span id="hud-hp-text" class="value">20 / 20</span>
+          </div>
+          <div class="pixel-bar-bg" id="sanctum-bar-bg">
+            <div id="hud-hp-bar" class="pixel-bar-fill hp-fill" style="width: 100%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pixel-divider"></div>
+
+      <!-- Ancient Shards -->
+      <div class="hud-group shards-counter" title="Ancient Shards">
+        <span class="hud-icon gold-glow">💎</span>
+        <div class="shards-info">
+          <span class="label">SHARDS</span>
+          <span id="hud-shards" class="shards-val">150</span>
+        </div>
+      </div>
+
+      <div class="pixel-divider"></div>
+
+      <!-- Astral Essence -->
+      <div class="hud-group essence-counter" title="Astral Essence (Dropped by Defeated Bosses)">
+        <span class="hud-icon essence-glow">🔮</span>
+        <div class="essence-info">
+          <span class="label">ESSENCE</span>
+          <span id="hud-essence" class="essence-val">0</span>
+        </div>
+      </div>
+
+      <div class="pixel-divider"></div>
+
+      <!-- Wave Tracker -->
+      <div class="hud-group wave-tracker" title="Current Wave Progress">
+        <span class="hud-icon wave-icon">🌊</span>
+        <div class="wave-info">
+          <span class="label">STATUS</span>
+          <span id="hud-wave" class="wave-val">WAVE 0 / 10</span>
+        </div>
+      </div>
+
+      <div class="pixel-divider"></div>
+
+      <!-- Action Controls -->
+      <div class="hud-group hud-actions">
+        <button id="btn-wave" class="pixel-btn wave-btn pulse-gold" title="Start Wave (Space)">
+          ▶ START WAVE [SPACE]
+        </button>
+        <button id="btn-speed" class="pixel-btn speed-btn" title="Toggle Speed (1x / 2x / 4x)">
+          ⚡ 1x
+        </button>
+        <button id="btn-audio" class="pixel-btn audio-btn" title="Toggle Audio (Mute / Unmute)">
+          🔊 SFX: ON
+        </button>
+        <button id="btn-settings-hud" class="pixel-btn settings-btn" title="Game Settings">
+          ⚙️ SETTINGS
+        </button>
+      </div>
+    </header>
+
+    <!-- Expansion Prompt Bar (Diegetic 3D In-World Selection HUD) -->
+    <div id="expansion-prompt-bar" class="expansion-prompt-bar hidden">
+      <span class="prompt-icon">🗺️</span>
+      <span class="prompt-text">CHOOSE AN EDGE TO EXPAND THE REALM</span>
+      <span class="prompt-icon">✨</span>
+    </div>
+
+    <!-- ========================================================
+         BOSS HEALTH BAR OVERLAY (Conditional)
+         ======================================================== -->
+    <div id="boss-bar-container" class="pixel-panel hidden">
+      <div class="boss-header">
+        <span class="boss-skull">💀</span>
+        <span id="boss-title-text" class="boss-title">THE ASTRAL LEVIATHAN</span>
+        <span id="boss-hp-text" class="boss-hp-val">2200 / 2200</span>
+      </div>
+      <div class="pixel-bar-bg boss-bar-bg">
+        <div id="boss-hp-bar" class="pixel-bar-fill boss-fill" style="width: 100%;"></div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         CONTEXTUAL GOLEM INSPECTOR (Streamlined Compact Card)
+         ======================================================== -->
+    <aside id="golem-inspector" class="pixel-panel streamlined-card hidden">
+      <!-- 0. Dedicated Top Header Row (Title & Close Button) -->
+      <div class="insp-header-row">
+        <h2 id="insp-name" class="insp-title">First of Stone</h2>
+        <button id="btn-close-insp" class="pixel-close-btn" title="Close Inspector">✖</button>
+      </div>
+
+      <!-- 1. Top Section: 2-Column Split (~60% Left / ~40% Right) -->
+      <div class="insp-top-section">
+        <!-- Top-Left Column: Attack/Damage Type Badge, Level, Compact Stats -->
+        <div class="insp-left-col">
+          <div id="insp-type-badge" class="insp-type-badge">AoE Splash · Physical</div>
+
+          <div class="insp-lvl-row">
+            <span id="insp-level" class="pixel-badge lvl-1">LV. 1</span>
+            <span id="insp-capstone-star" class="capstone-star hidden" title="Tier 3 Capstone Active!">⭐</span>
+          </div>
+
+          <!-- Compact Stats Box (DMG, RNG, SPD) -->
+          <div class="stats-box-compact">
+            <div class="stat-compact-row">
+              <span class="stat-tag">DMG</span>
+              <span class="stat-val-group">
+                <span id="insp-dmg">28</span>
+                <span id="delta-dmg" class="delta hidden">+9</span>
+                <span id="insp-dmg-type" class="stat-type-tag">PHYS</span>
+              </span>
+            </div>
+            <div class="stat-compact-row">
+              <span class="stat-tag">RNG</span>
+              <span class="stat-val-group">
+                <span id="insp-range">4.0</span>
+                <span id="delta-range" class="delta hidden">+0.32</span>
+              </span>
+            </div>
+            <div class="stat-compact-row">
+              <span class="stat-tag">SPD</span>
+              <span class="stat-val-group">
+                <span id="insp-aps">0.56</span>
+                <span id="delta-aps" class="delta hidden">+0.08</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top-Right Column: Golem Voxel Portrait + Elemental Socket Orb (o) -->
+        <div class="insp-right-col">
+          <div class="portrait-frame">
+            <div id="insp-portrait" class="golem-portrait-box">
+              <!-- Inline SVG Voxel Portrait injected here -->
+            </div>
+            <div id="insp-elem-orb" class="elem-orb-socket" title="Elemental Socket: Uninfused">
+              <span class="orb-icon">·</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Ascend Ability Preview Banner -->
+      <div id="insp-ascend-banner" class="insp-ascend-banner" title="Level 5 Primal Ascendance Perk">
+        <span class="ascend-crown-icon">👑</span>
+        <div class="ascend-text-col">
+          <span id="ascend-status-label" class="ascend-status-label">LV.5 ASCEND:</span>
+          <span id="ascend-desc-text" class="ascend-desc-text">Mega Meteor (3.2-tile crater shockwave)</span>
+        </div>
+      </div>
+
+      <!-- 3. Middle Action Row: [ Upgrade ] & [ Element ] (Stacked 2-line layout, NO text wrap) -->
+      <div class="insp-action-row">
+        <button id="btn-upgrade" class="pixel-btn action-btn upgrade-btn">
+          <span id="upgrade-btn-action" class="btn-primary-line">UPGRADE</span>
+          <span id="upgrade-btn-cost" class="btn-sub-line">43 💎</span>
+        </button>
+        <button id="btn-element-toggle" class="pixel-btn action-btn element-toggle-btn" title="Infuse with Elemental Power (1 🔮)">
+          <span id="element-btn-action" class="btn-primary-line">🔮 ELEMENT</span>
+          <span id="element-btn-cost" class="btn-sub-line">1 🔮</span>
+        </button>
+      </div>
+
+      <!-- Elemental Infusion Floating Popover -->
+      <div id="element-popover" class="element-popover hidden">
+        <div class="popover-header">
+          <span>ELEMENTAL INFUSION</span>
+          <span class="cost-tag">1 🔮</span>
+        </div>
+        <div class="popover-grid">
+          <button class="pixel-btn element-option-btn" data-element="thunder" title="⚡ Thunder: x1.5 Atk Speed, Zapped shock & 0.5s stun">
+            <span class="opt-icon">⚡</span>
+            <span class="opt-name">THUNDER</span>
+          </button>
+          <button class="pixel-btn element-option-btn" data-element="earth" title="🌍 Earth: +30% Damage, Knockback, Dirty 30% slow">
+            <span class="opt-icon">🌍</span>
+            <span class="opt-name">EARTH</span>
+          </button>
+          <button class="pixel-btn element-option-btn" data-element="fire" title="🔥 Fire: +50% Damage, Burned 2% max HP/s. Direct fire hits trigger Combustion!">
+            <span class="opt-icon">🔥</span>
+            <span class="opt-name">FIRE</span>
+          </button>
+          <button class="pixel-btn element-option-btn" data-element="water" title="💧 Water: AoE Splash, Wet 2x Thunder vuln + Mud slow + Combustion">
+            <span class="opt-icon">💧</span>
+            <span class="opt-name">WATER</span>
+          </button>
+        </div>
+        <div id="popover-elem-desc" class="popover-desc">Choose an element to imbue this Golem (Cost: 1 🔮 Essence). 1 active limit.</div>
+      </div>
+
+      <!-- 4. 4-Grid Priority Selector Box -->
+      <div class="priority-section">
+        <div class="priority-header-row">
+          <span class="priority-header-title">TARGETING PRIORITY</span>
+          <span id="priority-active-tag" class="priority-active-tag">FIRST</span>
+        </div>
+        <div class="priority-4grid">
+          <button class="pixel-btn target-btn active" data-mode="first">FIRST</button>
+          <button class="pixel-btn target-btn" data-mode="last">LAST</button>
+          <button class="pixel-btn target-btn" data-mode="strongest">STRONG</button>
+          <button class="pixel-btn target-btn" data-mode="closest">CLOSE</button>
+        </div>
+      </div>
+
+      <!-- 5. Spacious Footer with Bottom-Right [ Sell ] Button -->
+      <div class="insp-footer">
+        <div class="footer-spacer"></div>
+        <button id="btn-sell" class="pixel-btn action-btn sell-btn">
+          SELL (+35💎)
+        </button>
+      </div>
+    </aside>
+
+    <!-- ========================================================
+         BOTTOM SUMMONING DOCK
+         ======================================================== -->
+    <nav id="golem-dock" class="pixel-panel">
+      <!-- Card 1: Stone -->
+      <div class="golem-card active" data-type="stone" tabindex="0">
+        <span class="card-hotkey">[1]</span>
+        <div class="card-badge badge-stone">🪨</div>
+        <div class="card-info">
+          <div class="card-name">STONE</div>
+          <div class="card-role">AoE Splash</div>
+        </div>
+        <div class="card-cost">50 💎</div>
+      </div>
+
+      <!-- Card 2: Oak -->
+      <div class="golem-card" data-type="oak" tabindex="0">
+        <span class="card-hotkey">[2]</span>
+        <div class="card-badge badge-oak">🪵</div>
+        <div class="card-info">
+          <div class="card-name">OAK</div>
+          <div class="card-role">Fast Sniper</div>
+        </div>
+        <div class="card-cost">40 💎</div>
+      </div>
+
+      <!-- Card 3: Brick -->
+      <div class="golem-card" data-type="brick" tabindex="0">
+        <span class="card-hotkey">[3]</span>
+        <div class="card-badge badge-brick">🧱</div>
+        <div class="card-info">
+          <div class="card-name">BRICK</div>
+          <div class="card-role">Melee Stun</div>
+        </div>
+        <div class="card-cost">65 💎</div>
+      </div>
+
+      <!-- Card 4: Diorite -->
+      <div class="golem-card" data-type="diorite" tabindex="0">
+        <span class="card-hotkey">[4]</span>
+        <div class="card-badge badge-diorite">✨</div>
+        <div class="card-info">
+          <div class="card-name">DIORITE</div>
+          <div class="card-role">Arcane Slow</div>
+        </div>
+        <div class="card-cost">80 💎</div>
+      </div>
+    </nav>
+
+    <!-- ========================================================
+         MODULAR MAP EXPANSION MODAL / BANNER
+         ======================================================== -->
+    <div id="modal-expansion" class="modal-backdrop hidden">
+      <div class="modal-card pixel-panel expansion-theme">
+        <div class="modal-header">
+          <span class="modal-trophy">🗺️</span>
+          <h2>ANCIENT REALMS STIR!</h2>
+        </div>
+        <p class="modal-subtitle">
+          The Astral Harvester is vanquished! Uncover an ancient adjoining sector for the next 10 waves.<br>
+          Select which border of your territory to expand:
+        </p>
+        <div id="expansion-options" class="expansion-grid">
+          <!-- Dynamic border expansion choices injected by ChunkManager -->
+        </div>
+        <div class="expansion-warning">
+          <span>⚠️ Warning: As territory grows to 3 and 5 sectors, up to 3 alien portals will awaken simultaneously!</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         SETTINGS MODAL
+         ======================================================== -->
+    <div id="modal-settings" class="modal-backdrop hidden">
+      <div class="modal-card pixel-panel settings-theme">
+        <div class="modal-header">
+          <span class="modal-trophy">⚙️</span>
+          <h2>SETTINGS</h2>
+          <button id="btn-close-settings" class="pixel-close-btn" title="Close">✖</button>
+        </div>
+        <div class="settings-content">
+          <div class="setting-row">
+            <label for="slider-master-vol">Master Volume</label>
+            <div class="slider-wrapper">
+              <input type="range" id="slider-master-vol" min="0" max="100" value="80">
+              <span id="label-master-vol" class="vol-pct">80%</span>
+            </div>
+          </div>
+          <div class="setting-row">
+            <label for="slider-sfx-vol">SFX Volume</label>
+            <div class="slider-wrapper">
+              <input type="range" id="slider-sfx-vol" min="0" max="100" value="100">
+              <span id="label-sfx-vol" class="vol-pct">100%</span>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span>Audio Mute</span>
+            <button id="btn-toggle-mute-settings" class="pixel-btn">🔊 AUDIO: ON</button>
+          </div>
+          <div class="setting-row">
+            <span>Damage Flash Vignette</span>
+            <label class="pixel-checkbox-label">
+              <input type="checkbox" id="chk-vignette" checked>
+              <span class="chk-box"></span> Enabled
+            </label>
+          </div>
+          <div class="setting-row">
+            <span>Camera Controls</span>
+            <button id="btn-reset-cam-settings" class="pixel-btn">🧭 CENTER CAMERA</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         HOW TO PLAY / GUIDE MODAL (Rich Illustrated Codex)
+         ======================================================== -->
+    <div id="modal-guide" class="modal-backdrop hidden">
+      <div class="modal-card pixel-panel guide-theme">
+        <div class="modal-header sticky-header">
+          <div class="modal-header-left">
+            <span class="modal-trophy">📜</span>
+            <h2>CODEX OF THE FIRSTS · HOW TO PLAY</h2>
+          </div>
+          <button id="btn-close-guide" class="pixel-close-btn" title="Close Codex">✖</button>
+        </div>
+
+        <!-- Sticky Quick-Jump Navigation Bar -->
+        <nav class="guide-nav-bar">
+          <button type="button" class="guide-nav-tab active" data-target="guide-objective">🗺️ Map & Expansion</button>
+          <button type="button" class="guide-nav-tab" data-target="guide-golems">🗿 4 Golems</button>
+          <button type="button" class="guide-nav-tab" data-target="guide-elements">🔮 Elements & Combos</button>
+          <button type="button" class="guide-nav-tab" data-target="guide-enemies">👾 Alien Invaders</button>
+          <button type="button" class="guide-nav-tab" data-target="guide-controls">🎮 Controls & Shortcuts</button>
+        </nav>
+
+        <div class="guide-content-scrollable">
+          <!-- SECTION 1: MAP & MODULAR REALM EXPANSION -->
+          <section id="guide-objective" class="guide-card-section">
+            <div class="guide-section-header">
+              <span class="sec-badge">01</span>
+              <h3>🗺️ THE MAP & PROCEDURAL REALM EXPANSION</h3>
+            </div>
+            <p class="guide-lead-text">
+              Your mission is to protect the <strong>Ancient Sanctum (20 HP)</strong> from the alien fleet marching along the sunken cobblestone path.
+            </p>
+
+            <!-- Illustrated Schematic of Map & Expansion -->
+            <div class="guide-schematic-box">
+              <div class="schematic-visual">
+                <svg viewBox="0 0 460 220" width="100%" height="100%" style="display:block; shape-rendering: crispEdges;">
+                  <!-- Background Void Grid -->
+                  <rect x="0" y="0" width="460" height="220" fill="#120E0C" />
+                  <defs>
+                    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                      <rect width="20" height="20" fill="none" stroke="#261C16" stroke-width="1"/>
+                    </pattern>
+                  </defs>
+                  <rect x="0" y="0" width="460" height="220" fill="url(#grid)" />
+
+                  <!-- INITIAL SECTOR (Left Mesa) -->
+                  <rect x="30" y="40" width="160" height="140" fill="#3A2818" stroke="#8C6020" stroke-width="2"/>
+                  <rect x="36" y="46" width="148" height="128" fill="#DF9E34" opacity="0.95"/>
+                  <text x="110" y="32" fill="#FFD25A" font-family="'Press Start 2P', monospace" font-size="8" text-anchor="middle">INITIAL SECTOR</text>
+
+                  <!-- Sanctum on Initial Sector -->
+                  <rect x="46" y="56" width="34" height="34" fill="#585B5F" stroke="#A4A8AB" stroke-width="2"/>
+                  <rect x="56" y="66" width="14" height="14" fill="#39FF14"/>
+                  <text x="63" y="102" fill="#39FF14" font-family="'Press Start 2P', monospace" font-size="6" text-anchor="middle">SANCTUM</text>
+
+                  <!-- Sunken Oasis -->
+                  <rect x="134" y="56" width="36" height="28" fill="#29B6F6" stroke="#0288D1" stroke-width="2"/>
+                  <text x="152" y="96" fill="#40C4FF" font-family="'Press Start 2P', monospace" font-size="5" text-anchor="middle">OASIS</text>
+
+                  <!-- Path on Initial Sector -->
+                  <polyline points="160,145 110,145 110,95 80,95" fill="none" stroke="#8A8D91" stroke-width="12" stroke-linecap="square"/>
+                  <polyline points="160,145 110,145 110,95 80,95" fill="none" stroke="#F6F8FA" stroke-width="2" stroke-dasharray="4,4"/>
+
+                  <!-- Initial Portal (Collapsed after wave 10) -->
+                  <rect x="154" y="133" width="24" height="24" fill="#9C27B0" stroke="#E040FB" stroke-width="2"/>
+                  <text x="166" y="128" fill="#E040FB" font-family="'Press Start 2P', monospace" font-size="5" text-anchor="middle">PORTAL 1</text>
+
+                  <!-- EXPANSION ARROW -->
+                  <g transform="translate(202, 100)">
+                    <rect x="0" y="0" width="32" height="20" fill="#FFD700" stroke="#FFF" stroke-width="2"/>
+                    <polygon points="32,-6 48,10 32,26" fill="#FFD700" stroke="#FFF" stroke-width="2"/>
+                    <text x="16" y="14" fill="#000" font-family="'Press Start 2P', monospace" font-size="7" font-weight="bold" text-anchor="middle">EXPAND</text>
+                  </g>
+
+                  <!-- EXPANDED SECTOR (Right Mesa) -->
+                  <rect x="260" y="40" width="170" height="140" fill="#2E2014" stroke="#D4A359" stroke-width="2" stroke-dasharray="6,4"/>
+                  <rect x="266" y="46" width="158" height="128" fill="#CF8424" opacity="0.9"/>
+                  <text x="350" y="32" fill="#39FF14" font-family="'Press Start 2P', monospace" font-size="8" text-anchor="middle">EXPANDED REALM (WAVE 11+)</text>
+
+                  <!-- Connecting Carved Cobblestone Path -->
+                  <polyline points="190,145 266,145 320,145 320,80 395,80" fill="none" stroke="#8A8D91" stroke-width="12" stroke-linecap="square"/>
+                  <polyline points="190,145 266,145 320,145 320,80 395,80" fill="none" stroke="#FFE698" stroke-width="2" stroke-dasharray="4,4"/>
+
+                  <!-- Rune Pedestals on New Sector -->
+                  <rect x="340" y="110" width="18" height="18" fill="#8C6020" stroke="#39FF14" stroke-width="1"/>
+                  <rect x="280" y="100" width="18" height="18" fill="#8C6020" stroke="#39FF14" stroke-width="1"/>
+
+                  <!-- Outer Edge New Alien Portal -->
+                  <rect x="390" y="68" width="26" height="26" fill="#9C27B0" stroke="#00E5FF" stroke-width="2"/>
+                  <text x="403" y="60" fill="#00E5FF" font-family="'Press Start 2P', monospace" font-size="5" text-anchor="middle">NEW PORTAL</text>
+                </svg>
+              </div>
+
+              <div class="schematic-legend">
+                <div class="legend-item">
+                  <span class="legend-color-box col-sanctum"></span>
+                  <div><strong>Waves 1-10 (Starting Island):</strong> Defend the Ancient Sanctum against waves of scouts, troopers, and shielders. Earn 💎 Shards on every kill.</div>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-color-box col-portal"></span>
+                  <div><strong>Wave 10 Boss Fight:</strong> Vanquish the colossal Astral Leviathan. Defeating bosses drops 🔮 Astral Essence!</div>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-color-box col-expansion"></span>
+                  <div><strong>Wave 10 Realm Expansion:</strong> Choose any edge arrow (North, East, South, West) to seamlessly generate a new 16x16 sector with animated rising voxels, newly connected paths, and active portals!</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- SECTION 2: THE 4 PRIMAL GOLEMS -->
+          <section id="guide-golems" class="guide-card-section">
+            <div class="guide-section-header">
+              <span class="sec-badge">02</span>
+              <h3>🗿 THE 4 PRIMAL GOLEMS & 5-TIER ASCENDANCE</h3>
+            </div>
+            <p class="guide-lead-text">
+              Summon Golems onto Rune Pedestals along the path. Upgrade them up to Level 5 to unlock visual 3D voxel armor evolutions, Tier 3 Capstones, and Level 5 Primal Ascendance perks.
+            </p>
+
+            <div class="guide-golems-grid">
+              <!-- Stone -->
+              <div class="golem-codex-card">
+                <div class="golem-card-portrait">
+                  <svg viewBox="0 0 36 36" width="100%" height="100%" style="shape-rendering: crispEdges;">
+                    <rect x="0" y="0" width="36" height="36" fill="#14100E"/>
+                    <rect x="4" y="24" width="28" height="12" fill="#585B5F"/>
+                    <rect x="2" y="27" width="32" height="9" fill="#3A3C3E"/>
+                    <rect x="6" y="23" width="6" height="3" fill="#A4A8AB"/>
+                    <rect x="24" y="23" width="6" height="3" fill="#A4A8AB"/>
+                    <rect x="8" y="7" width="20" height="17" fill="#7A7E82"/>
+                    <rect x="10" y="5" width="16" height="3" fill="#A4A8AB"/>
+                    <rect x="9" y="11" width="18" height="3" fill="#585B5F"/>
+                    <rect x="11" y="14" width="4" height="2" fill="#00E5FF"/>
+                    <rect x="21" y="14" width="4" height="2" fill="#00E5FF"/>
+                  </svg>
+                </div>
+                <div class="golem-card-info">
+                  <div class="golem-card-title">🪨 First of Stone <span class="cost-tag">50 💎</span></div>
+                  <div class="golem-card-role">AoE Splash Artillery · Physical</div>
+                  <div class="golem-card-stats">RNG: 4.8 · SPD: 0.50 APS · DMG: 35</div>
+                  <div class="golem-card-desc">Lobs parabolic boulders crashing down with wide area-of-effect splash damage.</div>
+                  <div class="golem-card-ascend">👑 LV.5 ASCEND: <strong>Mega Meteor</strong> (3.2-tile crater shockwave + lingering magma)</div>
+                </div>
+              </div>
+
+              <!-- Oak -->
+              <div class="golem-codex-card">
+                <div class="golem-card-portrait">
+                  <svg viewBox="0 0 36 36" width="100%" height="100%" style="shape-rendering: crispEdges;">
+                    <rect x="0" y="0" width="36" height="36" fill="#14100E"/>
+                    <rect x="5" y="22" width="26" height="14" fill="#3E2723"/>
+                    <rect x="3" y="26" width="30" height="10" fill="#2E1B17"/>
+                    <rect x="9" y="8" width="18" height="15" fill="#5D4037"/>
+                    <rect x="11" y="5" width="14" height="4" fill="#8D6E63"/>
+                    <rect x="11" y="13" width="5" height="2" fill="#FF7043"/>
+                    <rect x="20" y="13" width="5" height="2" fill="#FF7043"/>
+                    <rect x="15" y="16" width="6" height="4" fill="#2E1B17"/>
+                    <rect x="16" y="19" width="4" height="5" fill="#FFB74D"/>
+                  </svg>
+                </div>
+                <div class="golem-card-info">
+                  <div class="golem-card-title">🪵 First of Oak <span class="cost-tag">40 💎</span></div>
+                  <div class="golem-card-role">Kinetic Sniper · Physical</div>
+                  <div class="golem-card-stats">RNG: 6.2 · SPD: 1.10 APS · DMG: 22</div>
+                  <div class="golem-card-desc">Rapid sniper slug cannon with 25% crit chance dealing 2x critical kinetic damage.</div>
+                  <div class="golem-card-ascend">👑 LV.5 ASCEND: <strong>Twin Ballista</strong> (Attacks 2 independent targets simultaneously)</div>
+                </div>
+              </div>
+
+              <!-- Brick -->
+              <div class="golem-codex-card">
+                <div class="golem-card-portrait">
+                  <svg viewBox="0 0 36 36" width="100%" height="100%" style="shape-rendering: crispEdges;">
+                    <rect x="0" y="0" width="36" height="36" fill="#14100E"/>
+                    <rect x="3" y="21" width="30" height="15" fill="#8B3A1C"/>
+                    <rect x="2" y="25" width="32" height="11" fill="#5C2412"/>
+                    <rect x="8" y="7" width="20" height="16" fill="#B84D26"/>
+                    <rect x="10" y="4" width="16" height="4" fill="#D9683B"/>
+                    <rect x="9" y="11" width="18" height="3" fill="#5C2412"/>
+                    <rect x="11" y="14" width="4" height="2" fill="#FFEA00"/>
+                    <rect x="21" y="14" width="4" height="2" fill="#FFEA00"/>
+                  </svg>
+                </div>
+                <div class="golem-card-info">
+                  <div class="golem-card-title">🧱 First of Brick <span class="cost-tag">65 💎</span></div>
+                  <div class="golem-card-role">360° Seismic Slam · Physical</div>
+                  <div class="golem-card-stats">RNG: 2.8 · SPD: 0.79 APS · DMG: 45</div>
+                  <div class="golem-card-desc">Ground slam shockwave hitting all enemies in radius, inflicting Stun & 25% Armor Shred.</div>
+                  <div class="golem-card-ascend">👑 LV.5 ASCEND: <strong>Cataclysmic Quake</strong> (3.6-tile radius, 0.9s Stun & 40% Shred)</div>
+                </div>
+              </div>
+
+              <!-- Diorite -->
+              <div class="golem-codex-card">
+                <div class="golem-card-portrait">
+                  <svg viewBox="0 0 36 36" width="100%" height="100%" style="shape-rendering: crispEdges;">
+                    <rect x="0" y="0" width="36" height="36" fill="#14100E"/>
+                    <rect x="4" y="23" width="28" height="13" fill="#D1D5DA"/>
+                    <rect x="3" y="27" width="30" height="9" fill="#959DA5"/>
+                    <rect x="9" y="8" width="18" height="16" fill="#F6F8FA"/>
+                    <rect x="11" y="9" width="14" height="3" fill="#E1E4E8"/>
+                    <rect x="11" y="14" width="4" height="2" fill="#00E5FF"/>
+                    <rect x="21" y="14" width="4" height="2" fill="#00E5FF"/>
+                    <rect x="16" y="18" width="4" height="4" fill="#00E5FF"/>
+                  </svg>
+                </div>
+                <div class="golem-card-info">
+                  <div class="golem-card-title">✨ First of Diorite <span class="cost-tag">80 💎</span></div>
+                  <div class="golem-card-role">Arcane Chain Beam · Magic</div>
+                  <div class="golem-card-stats">RNG: 5.0 · SPD: 0.65 APS · DMG: 28</div>
+                  <div class="golem-card-desc">Continuous solar energy beam chaining to secondary targets, inflicting Arcane Slow.</div>
+                  <div class="golem-card-ascend">👑 LV.5 ASCEND: <strong>Supernova Conduit</strong> (Chains up to 6 targets with deep 50% slow)</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- SECTION 3: ELEMENTS & COMBO REACTIONS -->
+          <section id="guide-elements" class="guide-card-section">
+            <div class="guide-section-header">
+              <span class="sec-badge">03</span>
+              <h3>🔮 ELEMENTAL INFUSIONS & COMBO REACTIONS</h3>
+            </div>
+            <p class="guide-lead-text">
+              Defeat bosses to gather 🔮 <strong>Astral Essence</strong>. Spend 1 Essence in the Golem Inspector to permanently infuse a Golem with an elemental affinity.
+            </p>
+
+            <div class="guide-elements-grid">
+              <div class="element-codex-card elem-thunder-card">
+                <div class="elem-card-header"><span class="elem-icon">⚡</span> <strong>THUNDER</strong></div>
+                <p>Applies <strong>Zapped</strong> status. Shocks enemies every 1.0s and inflicts periodic stuns.</p>
+              </div>
+              <div class="element-codex-card elem-earth-card">
+                <div class="elem-card-header"><span class="elem-icon">🌍</span> <strong>EARTH</strong></div>
+                <p><strong>+30% Damage</strong>, physics knockback impulse (2.2s anti-pinning cooldown), and <strong>Dirty</strong> slow.</p>
+              </div>
+              <div class="element-codex-card elem-fire-card">
+                <div class="elem-card-header"><span class="elem-icon">🔥</span> <strong>FIRE</strong></div>
+                <p><strong>+50% Damage</strong>. Inflicts <strong>Burned</strong> dealing 2% max HP/s continuous fire damage.</p>
+              </div>
+              <div class="element-codex-card elem-water-card">
+                <div class="elem-card-header"><span class="elem-icon">💧</span> <strong>WATER</strong></div>
+                <p>Adds <strong>AoE Splash</strong> to single-target attacks and applies <strong>Wet</strong> status to invaders.</p>
+              </div>
+            </div>
+
+            <h4 class="guide-subheading">💥 ELEMENTAL COMBO REACTIONS</h4>
+            <div class="guide-reactions-grid">
+              <div class="reaction-codex-card">
+                <div class="reaction-title">💥 COMBUSTION EXPLOSION</div>
+                <div class="reaction-formula"><span class="badge-fire">🔥 FIRE</span> + <span class="badge-water">💧 WET</span></div>
+                <p>A direct Fire hit on a Wet enemy causes an instant localized detonation dealing massive area damage!</p>
+              </div>
+
+              <div class="reaction-codex-card">
+                <div class="reaction-title">🌿💧 MUD SLOWDOWN</div>
+                <div class="reaction-formula"><span class="badge-earth">🌍 DIRTY</span> + <span class="badge-water">💧 WET</span></div>
+                <p>Moistened earth thickens into heavy mud, slashing enemy movement speed by an overwhelming 50%!</p>
+              </div>
+
+              <div class="reaction-codex-card">
+                <div class="reaction-title">⚡💧 2x ELECTRO-SHOCK</div>
+                <div class="reaction-formula"><span class="badge-thunder">⚡ THUNDER</span> + <span class="badge-water">💧 WET</span></div>
+                <p>Water conducts electricity! Thunder attacks deal a staggering 200% double damage against Wet enemies.</p>
+              </div>
+
+              <div class="reaction-codex-card">
+                <div class="reaction-title">🌪️ VOXEL TORNADO</div>
+                <div class="reaction-formula"><span class="badge-quad">⚡ + 🌍 + 🔥 + 💧 ALL 4 ELEMENTS</span></div>
+                <p>Applying all four elemental statuses simultaneously unleashes a catastrophic vortex that sweeps enemies backward!</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- SECTION 4: ALIEN INVADERS & BOSSES -->
+          <section id="guide-enemies" class="guide-card-section">
+            <div class="guide-section-header">
+              <span class="sec-badge">04</span>
+              <h3>👾 THE ALIEN INVADERS & ELITES</h3>
+            </div>
+            <p class="guide-lead-text">
+              The alien armada is comprised of specialized units, endgame elite variants, and dreadnought leviathans.
+            </p>
+
+            <div class="guide-enemies-grid">
+              <!-- Scout -->
+              <div class="enemy-codex-card">
+                <div class="enemy-portrait-box">
+                  <svg viewBox="0 0 32 32" width="100%" height="100%" style="shape-rendering: crispEdges;">
+                    <rect x="0" y="0" width="32" height="32" fill="#140E1A"/>
+                    <rect x="12" y="8" width="8" height="14" fill="#1A1126"/>
+                    <rect x="14" y="6" width="4" height="4" fill="#6A1B9A"/>
+                    <rect x="11" y="10" width="10" height="3" fill="#00E5FF"/>
+                    <rect x="4" y="12" width="8" height="6" fill="#4A148C"/>
+                    <rect x="20" y="12" width="8" height="6" fill="#4A148C"/>
+                    <rect x="2" y="14" width="4" height="2" fill="#00E5FF"/>
+                    <rect x="26" y="14" width="4" height="2" fill="#00E5FF"/>
+                  </svg>
+                </div>
+                <div class="enemy-info-box">
+                  <div class="enemy-name">🟣 Void Scout</div>
+                  <div class="enemy-meta">Speed: 1.25 (Fast) · HP: 45 · Reward: 8 💎</div>
+                  <p>Agile airborne reconnaissance units that dash towards the Sanctum. Vulnerable to fast Oak snipers.</p>
+                </div>
+              </div>
+
+              <!-- Trooper -->
+              <div class="enemy-codex-card">
+                <div class="enemy-portrait-box">
+                  <svg viewBox="0 0 32 32" width="100%" height="100%" style="shape-rendering: crispEdges;">
+                    <rect x="0" y="0" width="32" height="32" fill="#140E1A"/>
+                    <rect x="11" y="6" width="10" height="9" fill="#1A1126"/>
+                    <rect x="13" y="9" width="6" height="3" fill="#E040FB"/>
+                    <rect x="8" y="15" width="16" height="10" fill="#4A148C"/>
+                    <rect x="13" y="17" width="6" height="6" fill="#E040FB"/>
+                    <rect x="5" y="15" width="3" height="8" fill="#1A1126"/>
+                    <rect x="24" y="15" width="3" height="8" fill="#1A1126"/>
+                  </svg>
+                </div>
+                <div class="enemy-info-box">
+                  <div class="enemy-name">👾 Void Trooper</div>
+                  <div class="enemy-meta">Speed: 0.80 · HP: 110 · Reward: 15 💎</div>
+                  <p>Standard frontline shock infantry armed with scythe blades. Sustained damage from Stone & Brick is effective.</p>
+                </div>
+              </div>
+
+              <!-- Shielder -->
+              <div class="enemy-codex-card">
+                <div class="enemy-portrait-box">
+                  <svg viewBox="0 0 32 32" width="100%" height="100%" style="shape-rendering: crispEdges;">
+                    <rect x="0" y="0" width="32" height="32" fill="#140E1A"/>
+                    <rect x="8" y="8" width="16" height="16" fill="#1A1126"/>
+                    <rect x="10" y="10" width="12" height="12" fill="#00E5FF" opacity="0.8"/>
+                    <rect x="14" y="14" width="4" height="4" fill="#FFF"/>
+                    <rect x="6" y="6" width="20" height="3" fill="#FFD700"/>
+                    <rect x="6" y="23" width="20" height="3" fill="#FFD700"/>
+                  </svg>
+                </div>
+                <div class="enemy-info-box">
+                  <div class="enemy-name">🛡️ Phase Shielder</div>
+                  <div class="enemy-meta">Speed: 0.65 · HP: 240 · Reward: 25 💎</div>
+                  <p>Heavy bulwark absorbing 50% of Physical damage. Vulnerable to Armor Shred (Brick) and Magic damage (Diorite)!</p>
+                </div>
+              </div>
+
+              <!-- Skitterer -->
+              <div class="enemy-codex-card">
+                <div class="enemy-portrait-box">
+                  <svg viewBox="0 0 32 32" width="100%" height="100%" style="shape-rendering: crispEdges;">
+                    <rect x="0" y="0" width="32" height="32" fill="#140E1A"/>
+                    <rect x="10" y="10" width="12" height="10" fill="#76FF03"/>
+                    <rect x="12" y="7" width="8" height="5" fill="#1A1126"/>
+                    <rect x="13" y="8" width="2" height="2" fill="#E040FB"/>
+                    <rect x="17" y="8" width="2" height="2" fill="#E040FB"/>
+                    <rect x="4" y="14" width="6" height="2" fill="#1A1126"/>
+                    <rect x="22" y="14" width="6" height="2" fill="#1A1126"/>
+                    <rect x="4" y="18" width="6" height="2" fill="#1A1126"/>
+                    <rect x="22" y="18" width="6" height="2" fill="#1A1126"/>
+                  </svg>
+                </div>
+                <div class="enemy-info-box">
+                  <div class="enemy-name">🕷️ Swarm Skitterer</div>
+                  <div class="enemy-meta">Speed: 1.45 (Very Fast) · HP: 35 · Reward: 6 💎</div>
+                  <p>Fast quadruped pack skirmishers attacking in dense bursts every 0.25s. Stone & Brick AoE annihilates them.</p>
+                </div>
+              </div>
+
+              <!-- Boss -->
+              <div class="enemy-codex-card boss-card">
+                <div class="enemy-portrait-box">
+                  <svg viewBox="0 0 32 32" width="100%" height="100%" style="shape-rendering: crispEdges;">
+                    <rect x="0" y="0" width="32" height="32" fill="#140E1A"/>
+                    <rect x="8" y="6" width="16" height="18" fill="#1A1126"/>
+                    <rect x="12" y="10" width="8" height="8" fill="#E040FB"/>
+                    <rect x="14" y="12" width="4" height="4" fill="#FFF"/>
+                    <rect x="2" y="10" width="6" height="14" fill="#6A1B9A"/>
+                    <rect x="24" y="10" width="6" height="14" fill="#6A1B9A"/>
+                    <rect x="1" y="22" width="8" height="3" fill="#E040FB"/>
+                    <rect x="23" y="22" width="8" height="3" fill="#E040FB"/>
+                  </svg>
+                </div>
+                <div class="enemy-info-box">
+                  <div class="enemy-name">💀 Astral Leviathan (Boss)</div>
+                  <div class="enemy-meta">Speed: 0.64 · Base HP: 2200 · Reward: 220 💎 + 1 🔮</div>
+                  <p>Colossal dreadnought. Emits an AoE speed-boosting aura every 4.0s to nearby allies. 20% all-damage resist. Spawns dual bosses on Wave 15!</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="guide-tip-box">
+              <strong>⭐ UNIQUE SHINY VARIANTS & STATUS RESISTANCES:</strong> Starting at Wave 5, non-boss enemies have a chance to spawn with golden crowns and special auras (Titan HP, Swift Speed, Life Regen, Warding). Starting at Wave 11, enemies develop Stun/Slow resistances (capped at 65%) and rare immunity traits (STUN IMMUNE / SLOW IMMUNE).
+            </div>
+          </section>
+
+          <!-- SECTION 5: CONTROLS & SHORTCUTS -->
+          <section id="guide-controls" class="guide-card-section">
+            <div class="guide-section-header">
+              <span class="sec-badge">05</span>
+              <h3>🎮 KEYBINDINGS & TACTICAL SHORTCUTS</h3>
+            </div>
+            <p class="guide-lead-text">
+              Master the command controls to maintain complete tactical dominance over the battlefield.
+            </p>
+
+            <div class="guide-controls-table">
+              <div class="control-row">
+                <span class="pixel-kbd">[ 1 ] [ 2 ] [ 3 ] [ 4 ]</span>
+                <span class="control-desc">Select Golem to build (Stone, Oak, Brick, Diorite).</span>
+              </div>
+              <div class="control-row">
+                <span class="pixel-kbd">[ CLICK PEDESTAL ]</span>
+                <span class="control-desc">Summon the selected Golem onto an empty Rune Pedestal.</span>
+              </div>
+              <div class="control-row">
+                <span class="pixel-kbd">[ CLICK GOLEM ]</span>
+                <span class="control-desc">Open the Contextual Inspector: Upgrade, Ascend, Infuse Elements, and select 4-Grid Priority (FIRST, LAST, STRONG, CLOSE).</span>
+              </div>
+              <div class="control-row">
+                <span class="pixel-kbd">[ SPACEBAR ]</span>
+                <span class="control-desc">Start the next invasion wave immediately.</span>
+              </div>
+              <div class="control-row">
+                <span class="pixel-kbd">[ SPEED 1x / 2x / 4x ]</span>
+                <span class="control-desc">Toggle between Normal, Double, and Quadruple simulation speed.</span>
+              </div>
+              <div class="control-row">
+                <span class="pixel-kbd">[ DRAG MOUSE ]</span>
+                <span class="control-desc">Pan the isometric camera across the expanded realm.</span>
+              </div>
+              <div class="control-row">
+                <span class="pixel-kbd">[ MOUSE WHEEL ]</span>
+                <span class="control-desc">Zoom the camera in for close-up inspection or out for wide tactical overview.</span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         VICTORY MODAL (Wave 10 & Realm Expansion)
+         ======================================================== -->
+    <div id="modal-victory" class="modal-backdrop hidden">
+      <div class="modal-card pixel-panel victory-theme">
+        <div class="modal-header">
+          <span class="modal-trophy">🏆</span>
+          <h2>SANCTUM PRESERVED!</h2>
+        </div>
+        <p class="modal-subtitle">The Sunscorched Oasis stands unbroken.</p>
+        <div class="modal-stats">
+          <div class="modal-stat-row">
+            <span>Enemies Vanquished:</span>
+            <span id="vic-kills" class="stat-highlight">142</span>
+          </div>
+          <div class="modal-stat-row">
+            <span>Shards Gathered:</span>
+            <span id="vic-shards" class="stat-highlight">680 💎</span>
+          </div>
+          <div class="modal-stat-row">
+            <span>Sanctum Vitality:</span>
+            <span id="vic-hp" class="stat-highlight">20 / 20</span>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button id="btn-expand-realm" class="pixel-btn modal-btn expand-btn pulse-gold">
+            🗺️ EXPAND REALM (NEXT 10 WAVES)
+          </button>
+          <button id="btn-endless" class="pixel-btn modal-btn endless-btn">
+            ⚡ ENTER ENDLESS COMBAT
+          </button>
+          <button id="btn-victory-reset" class="pixel-btn modal-btn reset-btn">
+            🔄 PLAY AGAIN (RESET)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         GAME OVER MODAL
+         ======================================================== -->
+    <div id="modal-gameover" class="modal-backdrop hidden">
+      <div class="modal-card pixel-panel defeat-theme">
+        <div class="modal-header">
+          <span class="modal-skull">💀</span>
+          <h2>SANCTUM FALLEN</h2>
+        </div>
+        <p class="modal-subtitle">The alien horde has breached the primal titan.</p>
+        <div class="modal-stats">
+          <div class="modal-stat-row">
+            <span>Waves Survived:</span>
+            <span id="def-wave" class="stat-highlight">Wave 6</span>
+          </div>
+          <div class="modal-stat-row">
+            <span>Invaders Repelled:</span>
+            <span id="def-kills" class="stat-highlight">85</span>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button id="btn-defeat-reset" class="pixel-btn modal-btn try-again-btn">
+            ⚔️ TRY AGAIN (NEW REALM)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls Hint -->
+    <footer id="controls-hint">
+      <span>🖱️ Click Pedestal: Summon / Select · Keys 1-4: Pick Golem · Space: Wave · Drag: Pan · Wheel: Zoom</span>
+    </footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
